@@ -32,19 +32,19 @@ CREATE TABLE ACCOUNT_ROLES
 );
 
 INSERT INTO ACCOUNT (ID, UUID, USERNAME, PASSWORD, ENABLED, CREATED_AT, MODIFIED_AT)
-VALUES (1, 'd7a8dc0b-c843-4882-8e9d-43dde1dddcd2', 'johannes.preisinger@gmail.com',
+VALUES (1, 'd7a8dc0b-c843-4882-8e9d-43dde1dddcd2', 'anonym@gmail.com',
         '$2y$12$uHtxEyayfn4aqBaTk1PeoOORinFCqDflabJ28vMWcNbdQV4HIRGJm', true,
         '2021-05-27 04:05:06', '2021-05-27 04:05:06'),
        (2, 'c64eee9c-a4dc-11eb-bcbc-0242ac130002', 'admin@gmail.com',
         '$2y$12$5QkgDbXTAxMTbOF.CTFKz.RY/EwubDjWlV1vvhjsfEZo1ESHlSQke', true, '2021-05-27 04:05:06',
         '2021-05-27 04:05:06'),
-       (3, 'b773661f-476f-4869-9072-b33856aac247', 'evangelos.ntentos@univie.ac.at',
+       (3, 'b773661f-476f-4869-9072-b33856aac247', 'anonym@univie.ac.at',
         '$2y$12$mWp.FVbuAGFON4v994YaC.iTdXJyA1A6JDX.8qD0Y95J6pDcV6B8i', true, '2021-05-27 04:05:06',
         '2021-05-27 04:05:06'),
        (4, '26d7b000-a390-4418-888e-f50108edab5e', 'Himal',
         '$2y$12$xE.Y9v7uiYivSFzzu/U7Z.JQcV.6u7TNesuSYYoVHoUYLKLNhWt82', true, '2021-05-27 04:05:06',
         '2021-05-27 04:05:06'),
-        (5, '2963f79d-3af6-4847-8da3-6321a5ce0fe3', 'christian.lascsak7@gmail.com',
+        (5, '2963f79d-3af6-4847-8da3-6321a5ce0fe3', 'anonym@gmail.com',
         '$2y$12$ZOyrfuufuhHQj/dS1X1t7ONaW7LlVL3Rz5.RhuMJ0t3XfM.uC5kWO', true, '2021-05-27 04:05:06',
         '2021-05-27 04:05:06');
 
