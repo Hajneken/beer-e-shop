@@ -1,0 +1,62 @@
+server:
+  port: 8089
+  session:
+    cookie:
+      name: UISESSION
+spring:
+  cloud:
+    loadbalancer:
+      ribbon:
+        enable: false
+  thymeleaf:
+    cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          custom-client:
+            client-id: R2dpxQ3vPrtfgF72
+            client-secret: fDw7Mpkk5czHNuSRtmhGmAGL42CaxQB9
+            client-name: Auth Server
+            scope: user_info
+            provider: custom-provider
+            redirect-uri: http://localhost:8089/login/oauth2/code/
+            client-authentication-method: basic
+            authorization-grant-type: authorization_code
+        provider:
+          custom-provider:
+            token-uri: http://authorization:4001/auth/oauth/token
+            authorization-uri: http://localhost:4001/auth/oauth/authorize
+            user-info-uri: http://authorization:4001/auth/user/me
+            user-name-attribute: name
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 5000
+        loggerLevel: basic
+
+clients:
+  transactions:
+    name: transactions
+    url: transactions:4009
+  authorization:
+    name: authorization
+    url: authorization:4001
+  user:
+    name: user
+    url: user:4008
+  notification:
+    name: notification
+    url: notification:4002
+  shipment:
+    name: shipment
+    url: shipment:4007
+  inventory:
+    name: inventory
+    url: inventory:4006
+  product:
+    name: product
+    url: inventory:4006

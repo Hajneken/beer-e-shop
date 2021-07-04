@@ -1,0 +1,17 @@
+{
+  "name": "e2e-testing",
+  "version": "1.0.0",
+  "description": "project to execute e2e-testing separate of all other applications",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "cypress": "^7.5.0"
+  },
+  "scripts": {
+    "cypress:open": "cypress open"
+  }
+}

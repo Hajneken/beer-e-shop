@@ -1,0 +1,280 @@
+# docker-compose.yml
+version: "3.4"
+
+services:
+  # ALL STUFF RELATED TO KAFKA
+
+  zookeeper:
+    image: zookeeper:3.4.9
+    hostname: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_PORT: 2181
+      ZOO_SERVERS: server.1=zookeeper:2888:3888
+    volumes:
+      - ./data/zookeeper/data:/data
+      - ./data/zookeeper/datalog:/datalog
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+  kafka1:
+    image: confluentinc/cp-kafka:5.3.0
+    hostname: kafka1
+    ports:
+      - "9091:9091"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: LISTENER_DOCKER_INTERNAL://kafka1:19091,LISTENER_DOCKER_EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:9091
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: LISTENER_DOCKER_INTERNAL:PLAINTEXT,LISTENER_DOCKER_EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: LISTENER_DOCKER_INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_BROKER_ID: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    volumes:
+      - ./data/kafka1/data:/var/lib/kafka/data
+    depends_on:
+      - zookeeper
+    deploy:
+      resources:
+        limits:
+          memory: 500M
+  kafdrop:
+    image: obsidiandynamics/kafdrop
+    restart: "no"
+    ports:
+      - "9000:9000"
+    environment:
+      KAFKA_BROKERCONNECT: "kafka1:19091"
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9091
+    depends_on:
+      - kafka1
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+
+  # The Transaction Domain
+  postgres-transaction:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_TRANSACTION_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+
+  transaction-service:
+    restart: always
+    hostname: transactions
+    image: transaction-service
+    ports:
+      - ${ELECTRO_SERVICES_PORT}:${ELECTRO_SERVICES_PORT}
+    depends_on:
+      - postgres-transaction
+      - kafka1
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-transaction:${POSTGRES_PORT}/${POSTGRES_TRANSACTION_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+
+  # The Inventory Domain
+  postgres-inventory:
+    hostname: postgres-inventory
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_INVENTORY_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+
+  inventory-service:
+    restart: always
+    hostname: inventory
+    image: inventory-service
+    ports:
+      - ${ELECTRO_INVENTORY_PORT}:${ELECTRO_INVENTORY_PORT}
+    depends_on:
+      - kafka1
+      - postgres-inventory
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-inventory:${POSTGRES_PORT}/${POSTGRES_INVENTORY_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+
+  # The Notification Domain
+  postgres-notification:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_NOTIFICATION_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+
+  notification-service:
+    restart: always
+    hostname: notification
+    image: notification-service
+    ports:
+      - ${ELECTRO_NOTIFICATION_PORT}:${ELECTRO_NOTIFICATION_PORT}
+    depends_on:
+      - postgres-notification
+      - kafka1
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-notification:${POSTGRES_PORT}/${POSTGRES_NOTIFICATION_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+  # The Auth Domain
+  postgres-auth:
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_AUTH_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - 5432:5432
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+
+  auth-service:
+    restart: always
+    hostname: authorization
+    image: auth-service
+    ports:
+      - ${ELECTRO_AUTH_PORT}:${ELECTRO_AUTH_PORT}
+    depends_on:
+      - postgres-auth
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-auth:${POSTGRES_PORT}/${POSTGRES_AUTH_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+  # The Shipment Domain
+  postgres-shipment:
+    hostname: postgres-shipment
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_SHIPMENT_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+
+  shipment-service:
+    restart: always
+    hostname: shipment
+    image: shipment-service
+    ports:
+      - ${ELECTRO_SHIPMENT_PORT}:${ELECTRO_SHIPMENT_PORT}
+    depends_on:
+      - postgres-shipment
+      - kafka1
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-shipment:${POSTGRES_PORT}/${POSTGRES_SHIPMENT_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+          
+  # The User Domain
+  postgres-user:
+    hostname: postgres-user
+    image: postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_USER_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    deploy:
+      resources:
+        limits:
+          memory: 50M
+
+  user-service:
+    restart: always
+    hostname: user
+    image: user-service
+    ports:
+      - ${ELECTRO_USER_PORT}:${ELECTRO_USER_PORT}
+    depends_on:
+      - postgres-user
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+  # The BFF
+  electro-bff:
+    restart: always
+    hostname: reverseproxy
+    image: electro-bff
+    ports:
+      - ${ELECTRO_BFF_PORT}:${ELECTRO_BFF_PORT}
+    depends_on:
+      - transaction-service
+      - auth-service
+      - user-service
+      - notification-service
+      - shipment-service
+      - inventory-service
+    links:
+      - transaction-service
+      - auth-service
+      - user-service
+      - notification-service
+      - shipment-service
+      - inventory-service
+    deploy:
+      resources:
+        limits:
+          memory: 180M
+
+  # The UI Application
+  electro-ui:
+    restart: always
+    image: electro-shop-ui
+    ports:
+      - ${ELECTRO_UI_PORT}:${ELECTRO_UI_PORT}
+    depends_on:
+      - electro-bff
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+

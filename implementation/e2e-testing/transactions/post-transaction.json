@@ -1,0 +1,38 @@
+{
+  "seller": "3bfddb0-aa6c-4b0d-9975-67d5946173cb",
+  "buyer": "d7a8dc0b-c843-4882-8e9d-43dde1dddcd2",
+  "currency": "EUR",
+  "createdAt": "1999-01-08T04:05:06",
+  "modifiedAt": "1999-01-08T04:05:06",
+  "paymentMethod": "PAYMENT_ON_DELIVERY",
+  "address": {
+    "firstName": "Evangelos",
+    "lastName": "Nintendos",
+    "email": "evangelos.ntentos@univie.ac.at",
+    "street": "Cumberlandstraße",
+    "streetNumber": "111",
+    "doorNumber": "7",
+    "floor": "1. Kellergeschoss",
+    "city": "Wien",
+    "zipCode": "1140",
+    "country": "AUT"
+  },
+  "products": [
+    {
+      "id": "bf885025-49e1-4d76-9892-243cab04688a",
+      "price": 100
+    },
+    {
+      "id": "bf885025-49e1-4d76-9892-243cab04688a",
+      "price": 100
+    },
+    {
+      "id": "bf885025-49e1-4d76-9892-243cab04688a",
+      "price": 100
+    },
+    {
+      "id": "bf885025-49e1-4d76-9892-243cab04688a",
+      "price": 100
+    }
+  ]
+}

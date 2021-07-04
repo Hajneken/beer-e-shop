@@ -1,0 +1,51 @@
+CREATE SEQUENCE HIBERNATE_SEQUENCE START WITH 1 INCREMENT BY 1;
+
+CREATE TABLE TRANSACTIONS
+(
+    ID             INT          NOT NULL PRIMARY KEY,
+    UUID           VARCHAR(36)  NOT NULL,
+    SELLER         VARCHAR(36)  NOT NULL,
+    BUYER          VARCHAR(36)  NOT NULL,
+    PRODUCT        VARCHAR(36)  NOT NULL,
+    PAYMENT_METHOD VARCHAR(36)  NOT NULL,
+    PRICE          DECIMAL      NOT NULL,
+    CURRENCY       VARCHAR(36)  NOT NULL,
+    FIRST_NAME     VARCHAR(100) NOT NULL,
+    LAST_NAME      VARCHAR(100) NOT NULL,
+    EMAIL          VARCHAR(50)  NOT NULL,
+    STREET         VARCHAR(100) NOT NULL,
+    STREET_NUMBER  VARCHAR(50)  NOT NULL,
+    DOOR_NUMBER    VARCHAR(50)  NOT NULL,
+    FLOOR          VARCHAR(50)  NOT NULL,
+    CITY           VARCHAR(50)  NOT NULL,
+    ZIP_CODE       VARCHAR(9)   NOT NULL,
+    COUNTRY        VARCHAR(10)  NOT NULL,
+    CREATED_AT     TIMESTAMP    NOT NULL,
+    MODIFIED_AT    TIMESTAMP    NOT NULL,
+    UNIQUE (ID),
+    UNIQUE (UUID)
+);
+
+INSERT INTO TRANSACTIONS (ID, UUID, SELLER, BUYER, PRODUCT, PAYMENT_METHOD, PRICE, CURRENCY, FIRST_NAME, LAST_NAME,
+                          EMAIL, STREET, STREET_NUMBER, DOOR_NUMBER, FLOOR, CITY, ZIP_CODE, COUNTRY, CREATED_AT,
+                          MODIFIED_AT)
+VALUES (nextval('HIBERNATE_SEQUENCE'),
+        '008865a4-8348-11eb-8dcd-0242ac130003',
+        '5a48c43f-4c24-4ee5-bf75-430f83153349',
+        '6d8ea0ea-1162-4739-87b4-6729ef7f1a20',
+        'bf885025-49e1-4d76-9892-243cab04688a',
+        'PAYMENT_ON_DELIVERY',
+        100.00,
+        'EUR',
+        'Johannes',
+        'Preisinger',
+        'cnnwarthem@gmail.com',
+        'Cumberlandstraße',
+        '111',
+        '7',
+        '1. Kellergeschoss',
+        'Wien',
+        '1140',
+        'AUT',
+        '1999-01-08 04:05:06',
+        '1999-01-08 04:05:06');

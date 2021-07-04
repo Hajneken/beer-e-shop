@@ -1,0 +1,150 @@
+image: maven:3-jdk-11
+
+services:
+  - docker:dind    
+
+cache:
+  paths:
+    - node_modules/
+    - .yarn
+
+stages:
+  - build-backend
+#  - coverage
+  - build-frontend
+  - build-deploy-docker
+
+build-auth-service:
+  tags:
+    - ase-0501
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.auth.service
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.auth.service/target
+
+#coverage-auth:
+#  stage: coverage
+#  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+#  script:
+#    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml implementation/at.electro.shop.auth.service/src/main/java/ > target/site/cobertura.xml
+#  needs: ["build-auth-service"]
+#  dependencies:
+#    - build-auth-service
+#  artifacts:
+#    reports:
+#      cobertura: target/site/cobertura.xml
+
+build-transaction-service:
+  tags:
+    - ase-0501
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.transaction.service
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.transaction.service/target
+
+#coverage-transactions:
+#  stage: coverage
+#  image: registry.gitlab.com/haynes/jacoco2cobertura:1.0.7
+#  script:
+#    - python /opt/cover2cover.py target/site/jacoco/jacoco.xml implementation/at.electro.shop.transaction.service/src/main/java/ > target/site/cobertura.xml
+#  needs: ["build-transaction-service"]
+#  dependencies:
+#    - build-transaction-service
+#  artifacts:
+#    reports:
+#      cobertura: target/site/cobertura.xml
+
+build-notification-service:
+  tags:
+    - ase-0501 
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.notification.service
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.notification.service/target
+
+build-shipment-service:
+  tags:
+    - ase-0501
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.shipment.service
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.shipment.service/target
+
+build-user-service:
+  tags:
+    - ase-0501
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.user.service
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.user.service/target
+
+build-inventory-service:
+  tags:
+    - ase-0501
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.bff
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.bff/target
+
+build-bff-service:
+  tags:
+    - ase-0501
+  stage: build-backend
+  script:
+    - cd implementation/at.electro.shop.inventory.service
+    - ./mvnw -f pom.xml clean install -U
+  artifacts:
+    paths:
+      - implementation/at.electro.shop.inventory.service/target
+
+build-frontend:
+  tags:
+    - ase-0501
+  image: node:16.2.0
+  stage: build-frontend
+  script:
+    - cd implementation
+    - ./build-frontend.sh
+    - cd ../
+
+build-docker-and-deploy:
+  tags:
+    - ase-0501
+  stage: build-deploy-docker
+  image: tmaier/docker-compose:latest
+  dependencies: 
+    - build-auth-service
+    - build-bff-service
+    - build-inventory-service
+    - build-user-service
+    - build-shipment-service
+    - build-notification-service
+    - build-transaction-service
+    - build-auth-service
+    - build-frontend
+  script:
+    - cd ./implementation
+    - docker-compose --env-file ./config/env.dev build
+    - docker pull postgres
+    - docker pull obsidiandynamics/kafdrop
+    - docker pull confluentinc/cp-kafka
+    - docker pull zookeeper
+    - docker save user-service:latest transaction-service:latest auth-service:latest electro-bff:latest electro-shop-ui:latest shipment-service:latest notification-service:latest inventory-service:latest postgres obsidiandynamics/kafdrop confluentinc/cp-kafka zookeeper | gzip > ../deployment/deployment.tar.gz
